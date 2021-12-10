@@ -8,7 +8,11 @@
 
 
 
+[TOC]
+
 ## Introduction
+
+// TODO
 
 
 
@@ -16,19 +20,19 @@
 
 **[M1] Do you think we can use the current solution for a production environment? What are the main problems when deploying it in a production environment?**
 
-
+// TODO
 
 **[M2] Describe what you need to do to add new `webapp` container to the infrastructure. Give the exact steps of what you have to do without modifiying the way the things are done. Hint: You probably have to modify some configuration and script files in a Docker image.**
 
-
+// TODO
 
 **[M3] Based on your previous answers, you have detected some issues in the current solution. Now propose a better approach at a high level.**
 
-
+// TODO
 
 **[M4] You probably noticed that the list of web application nodes is hardcoded in the load balancer configuration. How can we manage the web app nodes in a more dynamic fashion?**
 
-
+// TODO
 
 **[M5] In the physical or virtual machines of a typical infrastructure we tend to have not only one main process (like the web server or the load balancer) running, but a few additional processes on the side to perform management tasks.**
 
@@ -36,13 +40,65 @@
 
 **Do you think our current solution is able to run additional management processes beside the main web server / load balancer process in a container? If no, what is missing / required to reach the goal? If yes, how to proceed to run for example a log forwarding process?**
 
-
+// TODO
 
 **[M6] In our current solution, although the load balancer configuration is changing dynamically, it doesn't follow dynamically the configuration of our distributed system when web servers are added or removed. If we take a closer look at the `run.sh` script, we see two calls to `sed` which will replace two lines in the `haproxy.cfg` configuration file just before we start `haproxy`. You clearly see that the configuration file has two lines and the script will replace these two lines.**
 
 **What happens if we add more web server nodes? Do you think it is really dynamic? It's far away from being a dynamic configuration. Can you propose a solution to solve this?**
 
+// TODO
 
+_____________________________
+
+Concernant l'installation des outils, Docker et Docker-Compose étaient déjà installés suite au laboratoire Load-Balancing précédemment effectué. 
+
+Cependant, en lançant la commande suivante, nous avons obtenu l'erreur mentionnée ci-dessous : 
+
+```bash
+$ docker-compose up --build
+ERROR: Pool overlaps with other one on this address space
+```
+
+Pour résoudre cette situation de conflit d'adresse pour le réseau, il a fallu lancer les commandes suivantes pour supprimer le réseau Docker responsable du conflit : 
+
+```bash
+$ docker network ls
+
+NETWORK ID     NAME                                                      DRIVER    SCOPE
+26f6b6e9af93   bridge                                                    bridge    local
+13cfd9b0b7ae   docker_default                                            bridge    local
+544dd0d58670   host                                                      host      local
+5f9a574fe881   none                                                      null      local
+5e029413fa29   teaching-heigvd-ait-2019-labo-load-balancing_public_net   bridge    local
+
+$ docker network rm teaching-heigvd-ait-2019-labo-load-balancing_public_net
+$ docker-compose up --build
+```
+
+Après ces manipulations, les trois conteneurs ont été contruits et démarrés correctement, nous constatons qu'en naviguant à l'adresse http://192.168.42.42, nous obtenons un JSON :
+
+```json
+{
+ "hello":"world!",
+ "ip":"192.168.42.22",
+ "host":"aebaefa9b895",
+ "tag":"s2",
+ "sessionViews":1,
+ "id":"sp35jEv01A5MYgdIGt8YnhR6yGVUIEfJ"
+}
+```
+
+
+
+**0.1 Take a screenshot of the stats page of HAProxy at http://192.168.42.42:1936. You should see your backend nodes.**
+
+![](img/task0-1_screenshot_haprox_stat.png)
+
+
+
+**0.2 Give the URL of your repository in the lab report.**
+
+L'URL de notre repo est la suivante : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker
 
 
 
@@ -50,11 +106,19 @@
 
 **1.1 Take a screenshot of the stats page of HAProxy at http://192.168.42.42:1936. You should see your backend nodes. It should be really similar to the screenshot of the previous task.**
 
+![](img/task1-1_screenshot_haproxy_stat.png)
+
 
 
 **1.2 Describe your difficulties for this task and your understanding of what is happening during this task. Explain in your own words why are we installing a process supervisor. Do not hesitate to do more research and to find more articles on that topic to illustrate the problem.**
 
+Nous n'avons pas rencontré de difficultés particulières pour accomplir cette tâche, la donnée du laboratoire étant très claire. Le guidage "step-by-step" permet d'accomplir toutes les actions sans problème significatif. 
 
+La difficulté principale serait peut-être de comprendre exactement pourquoi nous faisons ce qui est demandé, mais les articles donnés sous forme de liens dans la donnée permettent de se renseigner plus facilement. 
+
+Nous installons un `process supervisor` pour permettre d'exécuter plusieurs processus différents en même temps dans un seul conteneur. A la base, les conteneurs ont été prévus pour contenir un seul processus, mais il est utile dans différentes situations d'avoir plusieurs processus par conteneur. En effet, il est utile de monitorer les activités d'un conteneur et d'obtenir des logs sur ses activités, ces deux actions sont des processus supplémentaires à ajouter au conteneur. 
+
+// TODO : compléter
 
 
 
