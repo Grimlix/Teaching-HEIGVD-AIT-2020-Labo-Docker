@@ -1,6 +1,26 @@
 version: "3.5"
 
 services :
+  haproxy:
+       container_name: ha
+       build:
+         context: ./ha
+         dockerfile: Dockerfile
+       ports:
+         - 80:80
+         - 1936:1936
+         - 9999:9999
+       expose:
+         - 80
+         - 1936
+         - 9999
+       networks:
+         heig:
+           ipv4_address: ${HA_PROXY_IP}
+       environment:
+            - WEBAPP_1_IP=${WEBAPP_1_IP}
+            - WEBAPP_2_IP=${WEBAPP_2_IP}
+
   webapp1:
        container_name: ${WEBAPP_1_NAME}
        build:
@@ -29,25 +49,6 @@ services :
             - TAG=${WEBAPP_2_NAME}
             - SERVER_IP=${WEBAPP_2_IP}
 
-  haproxy:
-       container_name: ha
-       build:
-         context: ./ha
-         dockerfile: Dockerfile
-       ports:
-         - 80:80
-         - 1936:1936
-         - 9999:9999
-       expose:
-         - 80
-         - 1936
-         - 9999
-       networks:
-         heig:
-           ipv4_address: ${HA_PROXY_IP}
-       environment:
-            - WEBAPP_1_IP=${WEBAPP_1_IP}
-            - WEBAPP_2_IP=${WEBAPP_2_IP}
 networks:
     heig:
         name: heig
