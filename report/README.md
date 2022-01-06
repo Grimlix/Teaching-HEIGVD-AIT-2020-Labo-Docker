@@ -22,17 +22,25 @@
 
 // TODO
 
+
+
 **[M2] Describe what you need to do to add new `webapp` container to the infrastructure. Give the exact steps of what you have to do without modifiying the way the things are done. Hint: You probably have to modify some configuration and script files in a Docker image.**
 
 // TODO
+
+
 
 **[M3] Based on your previous answers, you have detected some issues in the current solution. Now propose a better approach at a high level.**
 
 // TODO
 
+
+
 **[M4] You probably noticed that the list of web application nodes is hardcoded in the load balancer configuration. How can we manage the web app nodes in a more dynamic fashion?**
 
-On va avoir besoin d'un service permettant de nous dire quel noeuds sont en marche. Nous pouvons utiliser un outil de management de membres comme Consul ou Serf. Cela nous permettera d'avoir une liste des noeuds actuellement en marche. Ces outils utilisent le peer2peer pour communiquer entre eux et enregistrer leur états dans le cluster où ils sont tous membre. 
+On va avoir besoin d'un service permettant de nous dire quels noeuds sont en marche. Nous pouvons utiliser un outil de management de membres comme `Consul` ou `Serf`. Cela nous permettera d'avoir une liste des noeuds actuellement en marche. Ces outils utilisent le `peer2peer` pour communiquer entre eux et enregistrer leurs états dans le cluster où ils sont tous membres. 
+
+
 
 **[M5] In the physical or virtual machines of a typical infrastructure we tend to have not only one main process (like the web server or the load balancer) running, but a few additional processes on the side to perform management tasks.**
 
@@ -42,11 +50,15 @@ On va avoir besoin d'un service permettant de nous dire quel noeuds sont en marc
 
 // TODO
 
+
+
 **[M6] In our current solution, although the load balancer configuration is changing dynamically, it doesn't follow dynamically the configuration of our distributed system when web servers are added or removed. If we take a closer look at the `run.sh` script, we see two calls to `sed` which will replace two lines in the `haproxy.cfg` configuration file just before we start `haproxy`. You clearly see that the configuration file has two lines and the script will replace these two lines.**
 
 **What happens if we add more web server nodes? Do you think it is really dynamic? It's far away from being a dynamic configuration. Can you propose a solution to solve this?**
 
 // TODO
+
+
 
 _____________________________
 
@@ -118,8 +130,6 @@ La difficulté principale serait peut-être de comprendre exactement pourquoi no
 
 Nous installons un `process supervisor` pour permettre d'exécuter plusieurs processus différents en même temps dans un seul conteneur. A la base, les conteneurs ont été prévus pour contenir un seul processus, mais il est utile dans différentes situations d'avoir plusieurs processus par conteneur. En effet, il est utile de monitorer les activités d'un conteneur et d'obtenir des logs sur ses activités, ces deux actions sont des processus supplémentaires à ajouter au conteneur. 
 
-// TODO : compléter
-
 
 
 ## Task 2 - Add a tool to manage membership in the web server cluster
@@ -138,23 +148,29 @@ Tous les logs sont dans le dossier demandé.
 
 **2.2 Give the answer to the question about the existing problem with the current solution.**
 
-Comment nous créons le cluster Serf n'est pas logique car nous obligeons les webapp à rejoindre le cluster à partir du  ```ha```. Donc si le noeux de  ```ha``` n'est pas disponible les nouvelles webapp ne pourront pas rejoindre le cluster  ```Serf```. Donc le  ```--replay``` ne servira pas à grand chose car il ne récupérera pas les  ```event handler``` de noeuds rejoignant le cluster, cependant il pourra quand même réagir aux événemenents de noeuds quittant le cluster.
-Afin de rémédier à ça il faudra toujours avoir une liste de noeuds existant dans le cluster et utiliser un de ceux-là pour rejoindre le cluster.
+Notre façon de créer le cluster Serf n'est pas logique, car nous obligeons les webapps à rejoindre le cluster à partir du  ```ha```. Donc si le noeud de  ```ha``` n'est pas disponible, les nouvelles webapps ne pourront pas rejoindre le cluster  ```Serf```. Donc le  ```--replay``` ne servira pas à grand chose car il ne récupérera pas les  ```event handler``` de noeuds rejoignant le cluster, cependant il pourra quand même réagir aux évènements de noeuds quittant le cluster.
+
+Pour y remédier, il faudrait toujours avoir une liste de noeuds existant dans le cluster et utiliser un de ceux-là pour rejoindre le cluster.
+
+
 
 **2.3 Give an explanation on how `Serf` is working. Read the official website to get more details about the `GOSSIP` protocol used in `Serf`. Try to find other solutions that can be used to solve similar situations where we need some auto-discovery mechanism.**
 
-Serf utilise le protocol Gossip pour envoyer des messages au cluster en utilisant "SWIM: Scalable Weakly-consistent Infection-style Process Group Membership Protocol".
+`Serf` utilise le protocole `Gossip` pour envoyer des messages au cluster en utilisant "SWIM: Scalable Weakly-consistent Infection-style Process Group Membership Protocol".
 
-Serf commence soit en créant ou en rejoignant un cluster. Lorsqu'un cluster est créé on attend que d'autres noeuds rejoignent le cluster. Afin de pouvoir rejoindre le cluster il faut avoir au moins une adresse d'un noeuds du cluster. Le nouveau membre va syncrhoniser son état actuel avec les autres via TCP et commencer à donner ses informations, on dit "gossiper", au cluster. Le "gossip" se fait via UDP et à une intervalle régulière. 
+`Serf` commence en créant ou en rejoignant un cluster. Lorsqu'un cluster est créé, on attend que d'autres noeuds le rejoignent. Pour rejoindre le cluster, il faut avoir au moins une adresse d'un noeud du cluster. Le nouveau membre va synchroniser son état actuel avec les autres via TCP et commencer à donner ses informations ("gossiper"), au cluster. Le "gossip" se fait via UDP et à intervalles réguliers. 
 
-On va aussi faire la synvhronisation d'état régulièrement afin d'otbenir une liste correcte des membres du cluster.
+On va aussi faire la synchronisation d'état régulièrement afin d'obtenir une liste correcte des membres du cluster.
 
-Une autre possiblité serait d'utiliser **consul** de HashyCorp également. Il utilise aussi le protocol Gossip et ajoute plusieurs caractèristiques utiles comme la découverte de service.
+Une autre possiblité serait d'utiliser **consul** de HashyCorp, également. Il utilise aussi le protocol `Gossip` et ajoute plusieurs caractéristiques utiles comme la découverte de services.
 
-Source : 
-- https://www.serf.io/docs/internals/gossip.
-- https://www.consul.io/docs/architecture/gossip
-- https://www.consul.io/docs/intro/vs/serf
+> Sources : 
+>
+> - https://www.serf.io/docs/internals/gossip.
+> - https://www.consul.io/docs/architecture/gossip
+> - https://www.consul.io/docs/intro/vs/serf
+
+
 
 ## Task 3 - React to membership changes
 
