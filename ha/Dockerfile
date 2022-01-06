@@ -37,6 +37,9 @@ COPY services/serf /etc/services.d/serf
 RUN chmod +x /etc/services.d/serf/run
 
 # TODO: [Serf] Copy events handler scripts
+RUN mkdir /serf-handlers
+COPY scripts/* /serf-handlers/
+RUN chmod +x /serf-handlers/*
 
 # Copy the haproxy and syslog config
 COPY config/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg

@@ -134,7 +134,7 @@ Nous installons un `process supervisor` pour permettre d'exécuter plusieurs pro
     |-- ...
 ```
 
-
+Tous les logs sont dans le dossier demandé.
 
 **2.2 Give the answer to the question about the existing problem with the current solution.**
 
@@ -160,13 +160,11 @@ Source :
 
 **3.1 Provide the docker log output for each of the containers:  `ha`, `s1` and `s2`. Put your logs in the `logs` directory you created in the previous task.**
 
-
+Tous les logs sont dans le dossier demandé.
 
 **3.2 Provide the logs from the `ha` container gathered directly from the `/var/log/serf.log` file present in the container. Put the logs in the `logs` directory in your repo.**
 
-
-
-
+Tous les logs sont dans le dossier demandé. 
 
 ## Task 4 - Use a template engine to easily generate configuration files 
 
