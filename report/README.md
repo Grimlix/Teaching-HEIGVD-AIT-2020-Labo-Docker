@@ -250,14 +250,24 @@ Les différents logs de cette étape se situent dans le dossier logs/task5/
 
 **6.1 Take a screenshots of the HAProxy stat page showing more than 2 web applications running. Additional screenshots are welcome to see a sequence of experimentations like shutting down a node and starting more nodes.**
 
+![](img/task6.png)
+
 **Also provide the output of `docker ps` in a log file. At least one file is expected. You can provide one output per step of your experimentation according to your screenshots.**
 
+L'output de docker ps est contenu dans le fichier /logs/task6/docker_ps , il a été produit après le lancement de quatres noeuds de backend.
 
+Nous avons ensuite kill le container webapp3, voici la page de statistiques de HAProxy après cette action :
+
+![](img/task6_2.png)
+
+Le fichier /logs/task6/docker_pa_after_kill_webapp3 contient l'output de docker ps après avoir kill la webapp3.
 
 **6.2 Give your own feelings about the final solution. Propose improvements or ways to do the things differently. If any, provide references to your readings for the improvements.**
 
-
-
+L'infrastructure mise en place dans ce laboratoire foncitonne mais reste basique, il faudrait modifier certains points pour que cette solution soit appliquable à une infrastructure réelle:
+* Par exemple, serf qui est sensé être un protocol peer2peer décentralisé est implémenté pour fonctionner avec un "master fictif" (haproxy). 
+* Il n'y a pas de contrôle de la signature de l'image NodeJS téléchargée afin de s'assurer de la provenance de l'image.
+* 
 **6.3 (Optional:) Present a live demo where you add and remove a backend container.**
 
 
