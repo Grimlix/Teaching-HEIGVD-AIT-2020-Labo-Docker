@@ -6,7 +6,7 @@ LABEL Cassandre Wojciechowski <cassandre.wojciechowski@heig-vd.ch>
 
 # Install some tools
 # TODO: [HB] Update to install required tool to install NodeJS
-RUN apt-get update && apt-get -y install wget curl vim iputils-ping rsyslog
+RUN apt-get update && apt-get -y install wget curl vim iputils-ping rsyslog xz-utils
 
 # TODO: [S6] Install
 # Download and install S6 overlay
@@ -21,8 +21,12 @@ RUN mkdir /opt/bin \
     && rm -f /tmp/serf.gz
 
 # TODO: [HB] Install NodeJS
+RUN curl -sSLo /tmp/node.tar.xz https://nodejs.org/dist/v14.15.1/node-v14.15.1-linux-x64.tar.xz \
+  && tar -C /usr/local --strip-components 1 -xf /tmp/node.tar.xz \
+  && rm -f /tmp/node.tar.xz
 
 # TODO: [HB] Install Handlebars
+RUN npm install -g handlebars-cmd
 
 # TODO: [S6] Replace the two following instructions
 # Copy all the scripts and make them executable
@@ -46,6 +50,8 @@ COPY config/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 COPY config/rsyslogd.cfg /etc/rsyslog.d/49-haproxy.conf
 
 # TODO: [HB] Copy the haproxy configuration template
+RUN mkdir /config
+COPY /config/haproxy.cfg.hb /config
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

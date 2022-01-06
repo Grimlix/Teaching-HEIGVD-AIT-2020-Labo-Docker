@@ -198,23 +198,29 @@ RUN command 3
 RUN command 1 && command 2 && command 3
 ```
 
+Chaque RUN ajoute un layer à l'image. C'est pourquoi il est déconseillé de le faire car ça augmente la taille de l'image. Cependant lorsqu'on developpe et qu'on veut rajouter une nouvelle commande RUN on a meilleur temps de rajouter une ligne afin de ne pas devoir recrée tout un layer juste pour la nouvelle fonctionnalité. 
+
+Donc quand on est en developpement on va plutôt rajouter une ligne mais en production on va tout mettre sur une ligne. 
+
 **There are also some articles about techniques to reduce the image size. Try to find them. They are talking about `squashing` or `flattening` images.**
 
+http://jasonwilder.com/blog/2014/08/19/squashing-docker-images/
 
+https://l10nn.medium.com/flattening-docker-images-bafb849912ff
 
 **4.2 Propose a different approach to architecture our images to be able to reuse as much as possible what we have done. Your proposition should also try to avoid as much as possible repetitions between your images.**
 
-
+On peut faire de l'héritage en créant un Dockerfile avec les choses communes aux différentes images en utilisant plusieurs fois la commande FROM (multistage builds).
 
 **4.3 Provide the `/tmp/haproxy.cfg` file generated in the `ha` container after each step.  Place the output into the `logs` folder like you already did for the Docker logs in the previous tasks. Three files are expected.**
 
 **In addition, provide a log file containing the output of the `docker ps` console and another file (per container) with `docker inspect <container>`. Four files are expected.**
 
-
+Tous les logs se trouve à l'emplacement demandé.
 
 **4.4 Based on the three output files you have collected, what can you say about the way we generate it? What is the problem if any?**
 
-
+Le problème est qu'à chaque fois qu'on insère un log, celui-ci override le log précédent donc on aura toujours seulement le dernier log. C'est pourquoi les 3 fichiers n'ont qu'une seule ligne. La commande ```handlebars``` dans le script ```member-join.sh``` devrait ajouter un log à la fin du fichier ```/tmp/haproxy.cfg``` et non l'override.
 
 ## Task 5 - Generate a new load balancer configuration when membership changes
 
