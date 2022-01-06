@@ -57,6 +57,7 @@ COPY /config/haproxy.cfg.hb /config
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # TODO: [CFG] Create the nodes folder
+RUN mkdir /nodes
 
 # TODO: [Serf] Expose ports
 EXPOSE 7946 7373

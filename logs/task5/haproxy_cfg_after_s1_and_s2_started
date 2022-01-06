@@ -110,9 +110,15 @@ backend nodes
 
     # HANDLEBARS START
     # TODO: [CFG] Remove all the servers
+    
+    server 08bdb1401359 192.168.42.11:3000 check
+    
+    server a729e3f6da0e 192.168.42.22:3000 check
+    
     # HANDLEBARS STOP
 
 # Other links you will need later for this lab
 #
 # About cookies: http://cbonte.github.io/haproxy-dconv/2.2/configuration.html#4-cookie
 #
+

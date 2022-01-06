@@ -238,7 +238,7 @@ Le problème est qu'à chaque fois qu'on insère un log, celui-ci override le lo
 
 **In addition, provide a log file containing the output of the `docker ps` console. One file expected.**
 
-
+Les différents logs de cette étape se situent dans le dossier logs/task5/
 
 **5.4 (Optional:) Propose a different approach to manage the list of backend nodes. You do not need to implement it. You can also propose your own tools or the ones you discovered online. In that case, do not forget to cite your references.**
 
