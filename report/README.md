@@ -32,7 +32,7 @@
 
 **[M4] You probably noticed that the list of web application nodes is hardcoded in the load balancer configuration. How can we manage the web app nodes in a more dynamic fashion?**
 
-// TODO
+On va avoir besoin d'un service permettant de nous dire quel noeuds sont en marche. Nous pouvons utiliser un outil de management de membres comme Consul ou Serf. Cela nous permettera d'avoir une liste des noeuds actuellement en marche. Ces outils utilisent le peer2peer pour communiquer entre eux et enregistrer leur états dans le cluster où ils sont tous membre. 
 
 **[M5] In the physical or virtual machines of a typical infrastructure we tend to have not only one main process (like the web server or the load balancer) running, but a few additional processes on the side to perform management tasks.**
 
@@ -138,13 +138,23 @@ Nous installons un `process supervisor` pour permettre d'exécuter plusieurs pro
 
 **2.2 Give the answer to the question about the existing problem with the current solution.**
 
-
+Comment nous créons le cluster Serf n'est pas logique car nous obligeons les webapp à rejoindre le cluster à partir du  ```ha```. Donc si le noeux de  ```ha``` n'est pas disponible les nouvelles webapp ne pourront pas rejoindre le cluster  ```Serf```. Donc le  ```--replay``` ne servira pas à grand chose car il ne récupérera pas les  ```event handler``` de noeuds rejoignant le cluster, cependant il pourra quand même réagir aux événemenents de noeuds quittant le cluster.
+Afin de rémédier à ça il faudra toujours avoir une liste de noeuds existant dans le cluster et utiliser un de ceux-là pour rejoindre le cluster.
 
 **2.3 Give an explanation on how `Serf` is working. Read the official website to get more details about the `GOSSIP` protocol used in `Serf`. Try to find other solutions that can be used to solve similar situations where we need some auto-discovery mechanism.**
 
+Serf utilise le protocol Gossip pour envoyer des messages au cluster en utilisant "SWIM: Scalable Weakly-consistent Infection-style Process Group Membership Protocol".
 
+Serf commence soit en créant ou en rejoignant un cluster. Lorsqu'un cluster est créé on attend que d'autres noeuds rejoignent le cluster. Afin de pouvoir rejoindre le cluster il faut avoir au moins une adresse d'un noeuds du cluster. Le nouveau membre va syncrhoniser son état actuel avec les autres via TCP et commencer à donner ses informations, on dit "gossiper", au cluster. Le "gossip" se fait via UDP et à une intervalle régulière. 
 
+On va aussi faire la synvhronisation d'état régulièrement afin d'otbenir une liste correcte des membres du cluster.
 
+Une autre possiblité serait d'utiliser **consul** de HashyCorp également. Il utilise aussi le protocol Gossip et ajoute plusieurs caractèristiques utiles comme la découverte de service.
+
+Source : 
+- https://www.serf.io/docs/internals/gossip.
+- https://www.consul.io/docs/architecture/gossip
+- https://www.consul.io/docs/intro/vs/serf
 
 ## Task 3 - React to membership changes
 
