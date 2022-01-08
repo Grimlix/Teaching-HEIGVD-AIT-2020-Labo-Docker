@@ -12,7 +12,11 @@
 
 ## Introduction
 
-// TODO
+Ce quatrième laboratoire du cours "Administration IT" va nous permettre d'appliquer les connaissances acquises lors des cours théoriques sur la technologie `Docker`. Nous allons pouvoir construire nos propres images et approfondir notre compréhension des processus de supervision pour `Docker`. 
+
+Dans le cadre de ce laboratoire, nous allons également aborder des concepts d'évolutivité dynamique pour des applications en production, ainsi que la gestion décentralisée de serveurs web. 
+
+Le but final de ce travail est d'améliorer la solution créée lors du laboratoire précédent pour obtenir une infrastructure évolutive, dans laquelle nous pourrons ajouter et retirer des "nodes" sans recréer l'image Docker de HAProxy à chaque modification.
 
 
 
@@ -20,19 +24,21 @@
 
 **[M1] Do you think we can use the current solution for a production environment? What are the main problems when deploying it in a production environment?**
 
-// TODO
+La solution actuelle, créée lors du laboratoire 3, n'est pas utilisable dans un milieu de production. Elle n'est pas évolutive, nous ne pouvons pas ajouter ou retirer automatiquement des "nodes", il faut le faire manuellement, ce qui n'est pas du tout approprié à de la production.
 
 
 
 **[M2] Describe what you need to do to add new `webapp` container to the infrastructure. Give the exact steps of what you have to do without modifiying the way the things are done. Hint: You probably have to modify some configuration and script files in a Docker image.**
 
-// TODO
+Afin de modifier l'infrastructure pour lui ajouter une nouvelle application, nous devons modifier le fichier de configuration de HAProxy pour lui ajouter la nouvelle "node", puis modifier le fichier `docker-compose.yml` pour que l'application soit créée et lié à HAProxy. 
+
+Nous allons ensuite recréer les conteneurs et les relander pour qu'ils prennent en compte les modifications de configuration. 
 
 
 
 **[M3] Based on your previous answers, you have detected some issues in the current solution. Now propose a better approach at a high level.**
 
-// TODO
+Pour améliorer la solution, il faudrait rendre les étapes décrites précédemment dynamiques, pour que de nouvelles "nodes" puissent être ajoutées et que la configuration de HAProxy soit adaptée sans intervention manuelle. 
 
 
 
@@ -48,7 +54,9 @@ On va avoir besoin d'un service permettant de nous dire quels noeuds sont en mar
 
 **Do you think our current solution is able to run additional management processes beside the main web server / load balancer process in a container? If no, what is missing / required to reach the goal? If yes, how to proceed to run for example a log forwarding process?**
 
-// TODO
+La solution actuelle ne nous permet d'avoir qu'un seul processus par conteneur. Pour remédier à cela et avoir plusieurs processus par conteneur, il faut envisager une solution avec un processus de base qui lancerait les services qui doivent tourner côte à côte. 
+
+Un premier processus serait démarré et lancerait l'application web (ou HAProxy, selon le conteneur) et le service de transmission de logs. 
 
 
 
@@ -56,13 +64,15 @@ On va avoir besoin d'un service permettant de nous dire quels noeuds sont en mar
 
 **What happens if we add more web server nodes? Do you think it is really dynamic? It's far away from being a dynamic configuration. Can you propose a solution to solve this?**
 
-// TODO
+Il faut modifier manuellement la configuration de HAProxy pour ajouter de nouvelles "nodes", ceci n'est pas du tout dynamique. 
+
+Une solution envisageable serait de parcourir la liste rassemblant toutes les "nodes" pour ensuite modifier dynamiquement la configuration de HAProxy, notamment avec un moteur de templates tel que `Handlebars`.
 
 
 
 _____________________________
 
-Concernant l'installation des outils, Docker et Docker-Compose étaient déjà installés suite au laboratoire Load-Balancing précédemment effectué. 
+Concernant l'installation des outils, Docker et Docker-Compose étaient déjà installés suite au laboratoire "Load-Balancing" précédemment effectué. 
 
 Cependant, en lançant la commande suivante, nous avons obtenu l'erreur mentionnée ci-dessous : 
 
@@ -144,11 +154,13 @@ Nous installons un `process supervisor` pour permettre d'exécuter plusieurs pro
     |-- ...
 ```
 
-Tous les logs sont dans le dossier demandé.
+Tous les logs sont dans le dossier demandé : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/tree/master/logs/task2.
+
+
 
 **2.2 Give the answer to the question about the existing problem with the current solution.**
 
-Notre façon de créer le cluster Serf n'est pas logique, car nous obligeons les webapps à rejoindre le cluster à partir du  ```ha```. Donc si le noeud de  ```ha``` n'est pas disponible, les nouvelles webapps ne pourront pas rejoindre le cluster  ```Serf```. Donc le  ```--replay``` ne servira pas à grand chose car il ne récupérera pas les  ```event handler``` de noeuds rejoignant le cluster, cependant il pourra quand même réagir aux évènements de noeuds quittant le cluster.
+Notre façon de créer le cluster Serf n'est pas logique, car nous obligeons les webapps à rejoindre le cluster à partir du `ha`. Si le noeud de `ha` n'est pas disponible, les nouvelles webapps ne pourront pas rejoindre le cluster `Serf`. Le flag `--replay` ne servira pas à grand chose car il ne récupérera pas les `event handler` de noeuds rejoignant le cluster, cependant il pourra quand même réagir aux évènements de noeuds quittant le cluster.
 
 Pour y remédier, il faudrait toujours avoir une liste de noeuds existant dans le cluster et utiliser un de ceux-là pour rejoindre le cluster.
 
@@ -176,11 +188,15 @@ Une autre possiblité serait d'utiliser **consul** de HashyCorp, également. Il 
 
 **3.1 Provide the docker log output for each of the containers:  `ha`, `s1` and `s2`. Put your logs in the `logs` directory you created in the previous task.**
 
-Tous les logs sont dans le dossier demandé.
+Tous les logs sont dans le dossier demandé : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/tree/master/logs/task3.
+
+
 
 **3.2 Provide the logs from the `ha` container gathered directly from the `/var/log/serf.log` file present in the container. Put the logs in the `logs` directory in your repo.**
 
-Tous les logs sont dans le dossier demandé. 
+Tous les logs sont dans le dossier demandé : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/blob/master/logs/task3/s1_logs.
+
+
 
 ## Task 4 - Use a template engine to easily generate configuration files 
 
@@ -198,29 +214,39 @@ RUN command 3
 RUN command 1 && command 2 && command 3
 ```
 
-Chaque RUN ajoute un layer à l'image. C'est pourquoi il est déconseillé de le faire car ça augmente la taille de l'image. Cependant lorsqu'on developpe et qu'on veut rajouter une nouvelle commande RUN on a meilleur temps de rajouter une ligne afin de ne pas devoir recrée tout un layer juste pour la nouvelle fonctionnalité. 
-
-Donc quand on est en developpement on va plutôt rajouter une ligne mais en production on va tout mettre sur une ligne. 
-
 **There are also some articles about techniques to reduce the image size. Try to find them. They are talking about `squashing` or `flattening` images.**
 
-http://jasonwilder.com/blog/2014/08/19/squashing-docker-images/
+Chaque `RUN` ajoute une couche ("layer") à l'image. C'est pourquoi il est déconseillé de le faire, car cela augmente la taille de l'image. Cependant lorsqu'on développe et qu'on veut ajouter une nouvelle commande `RUN`, c'est plus simple d'ajouter une ligne afin de ne pas devoir recréer tout un layer juste pour la nouvelle fonctionnalité. 
 
-https://l10nn.medium.com/flattening-docker-images-bafb849912ff
+Dans le cas du développement, on va plutôt ajouter une ligne `RUN`, mais en production on va tout mettre sur une ligne. 
+
+
+
+Article sur le `squashing` d'images : http://jasonwilder.com/blog/2014/08/19/squashing-docker-images/
+
+Article sur le `flattening` d'images : https://l10nn.medium.com/flattening-docker-images-bafb849912ff
+
+
 
 **4.2 Propose a different approach to architecture our images to be able to reuse as much as possible what we have done. Your proposition should also try to avoid as much as possible repetitions between your images.**
 
-On peut faire de l'héritage en créant un Dockerfile avec les choses communes aux différentes images en utilisant plusieurs fois la commande FROM (multistage builds).
+Nous pourrions faire de l'héritage en créant une image de base avec un `Dockerfile` oontenant les lignes communes aux différentes images en utilisant plusieurs fois la commande `FROM` ("multistage builds"). Les images héritant de l'image de base seront donc de plus petites tailles.
+
+
 
 **4.3 Provide the `/tmp/haproxy.cfg` file generated in the `ha` container after each step.  Place the output into the `logs` folder like you already did for the Docker logs in the previous tasks. Three files are expected.**
 
 **In addition, provide a log file containing the output of the `docker ps` console and another file (per container) with `docker inspect <container>`. Four files are expected.**
 
-Tous les logs se trouve à l'emplacement demandé.
+Tous les logs se trouve à l'emplacement demandé : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/tree/master/logs/task4.
+
+
 
 **4.4 Based on the three output files you have collected, what can you say about the way we generate it? What is the problem if any?**
 
-Le problème est qu'à chaque fois qu'on insère un log, celui-ci override le log précédent donc on aura toujours seulement le dernier log. C'est pourquoi les 3 fichiers n'ont qu'une seule ligne. La commande ```handlebars``` dans le script ```member-join.sh``` devrait ajouter un log à la fin du fichier ```/tmp/haproxy.cfg``` et non l'override.
+Le problème est qu'à chaque fois que nous insérons un log, celui-ci remplace le log précédent, seul le dernier log sera donc présent. C'est pourquoi les trois fichiers n'ont qu'une seule ligne. La commande ```handlebars``` dans le script ```member-join.sh``` devrait ajouter un log à la fin du fichier ```/tmp/haproxy.cfg``` et non écrire par dessus.
+
+
 
 ## Task 5 - Generate a new load balancer configuration when membership changes
 
@@ -228,9 +254,13 @@ Le problème est qu'à chaque fois qu'on insère un log, celui-ci override le lo
 
 **In addition, provide a log file containing the output of the `docker ps` console and another file (per container) with `docker inspect <container>`. Four files are expected.**
 
+Tous les logs se trouvent à l'emplacement demandé : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/tree/master/logs/task5.
+
 
 
 **5.2 Provide the list of files from the `/nodes` folder inside the `ha` container. One file expected with the command output.**
+
+Tous les logs se trouvent à l'emplacement demandé : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/tree/master/logs/task5.
 
 
 
@@ -238,44 +268,60 @@ Le problème est qu'à chaque fois qu'on insère un log, celui-ci override le lo
 
 **In addition, provide a log file containing the output of the `docker ps` console. One file expected.**
 
-Les différents logs de cette étape se situent dans le dossier logs/task5/
+Tous les logs se trouvent à l'emplacement demandé : https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/tree/master/logs/task5.
+
+
 
 **5.4 (Optional:) Propose a different approach to manage the list of backend nodes. You do not need to implement it. You can also propose your own tools or the ones you discovered online. In that case, do not forget to cite your references.**
 
-
+-
 
 
 
 ## Task 6 - Make the load balancer automatically reload the new configuration
 
-**6.1 Take a screenshots of the HAProxy stat page showing more than 2 web applications running. Additional screenshots are welcome to see a sequence of experimentations like shutting down a node and starting more nodes.**
-
-![](img/task6.png)
+**6.1 Take a screenshot of the HAProxy stat page showing more than 2 web applications running. Additional screenshots are welcome to see a sequence of experimentations like shutting down a node and starting more nodes.**
 
 **Also provide the output of `docker ps` in a log file. At least one file is expected. You can provide one output per step of your experimentation according to your screenshots.**
 
-L'output de docker ps est contenu dans le fichier /logs/task6/docker_ps , il a été produit après le lancement de quatres noeuds de backend.
+Ci-dessous la page de statistiques de HAProxy avec plus de deux applications lancées :
 
-Nous avons ensuite kill le container webapp3, voici la page de statistiques de HAProxy après cette action :
+![](img/task6.png)
+
+
+
+L'output de la commande `docker ps` est contenu dans le fichier https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/blob/master/logs/task6/docker_ps, il a été produit après le lancement de quatre noeuds de backend.
+
+Nous avons ensuite stoppé le container `webapp3`, voici la page de statistiques de HAProxy après cette action :
 
 ![](img/task6_2.png)
 
-Le fichier /logs/task6/docker_pa_after_kill_webapp3 contient l'output de docker ps après avoir kill la webapp3.
+Le fichier https://github.com/Grimlix/Teaching-HEIGVD-AIT-2020-Labo-Docker/blob/master/logs/task6/docker_ps_after_kill_webapp3 contient l'output de la commande `docker ps` après avoir stoppé la `webapp3`.
+
+
 
 **6.2 Give your own feelings about the final solution. Propose improvements or ways to do the things differently. If any, provide references to your readings for the improvements.**
 
-L'infrastructure mise en place dans ce laboratoire foncitonne mais reste basique, il faudrait modifier certains points pour que cette solution soit appliquable à une infrastructure réelle:
-* Par exemple, serf qui est sensé être un protocol peer2peer décentralisé est implémenté pour fonctionner avec un "master fictif" (haproxy). 
-* Il n'y a pas de contrôle de la signature de l'image NodeJS téléchargée afin de s'assurer de la provenance de l'image.
-* 
+L'infrastructure mise en place dans ce laboratoire fonctionne mais reste basique, il faudrait modifier certains points pour que cette solution soit applicable à une infrastructure réelle :
+* Par exemple, `Serf` qui est sensé être un protocole `peer2peer` décentralisé est implémenté pour fonctionner avec un "master fictif" (HAProxy). 
+* Il n'y a pas de contrôle de la signature de l'image `NodeJS` téléchargée afin de s'assurer de la provenance de l'image.
+
+
+
 **6.3 (Optional:) Present a live demo where you add and remove a backend container.**
+
+-
 
 
 
 ## Difficulties 
 
-// TODO : describe the problems encountered & the solutions found
+Nous n'avons pas rencontré de problèmes particuliers lors de ce laboratoire, notamment grâce au guidage "step-by-step" mentionné plus haut et aux nombreuses références données pour illustrer les concepts et expliquer comment utiliser les outils. 
 
 
 
 ## Conclusion
+
+Nous avons pu terminer ce laboratoire dans le temps imparti et celui-ci nous a permis d'appliquer les concepts vu en cours, comme par exemple, la technologie des conteneurs avec `Docker`. 
+
+Nous avons réussi à rendre notre infrastructure plus dynamique qu'elle ne l'était au départ, nous pouvons maintenant ajouter ou retirer des "nodes" dynamiquement, sans intervention manuelle supplémentaire. 
